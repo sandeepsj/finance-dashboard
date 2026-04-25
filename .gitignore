@@ -45,6 +45,7 @@ dist-ssr/
 coverage/
 .cache/
 .turbo/
+*.tsbuildinfo
 
 # Logs
 npm-debug.log*

@@ -1,0 +1,108 @@
+@tailwind base;
+@tailwind components;
+@tailwind utilities;
+
+/* Tokens transcribed from docs/design/project/tokens.js. */
+:root {
+  --bg: oklch(98.5% 0.005 80);
+  --surface: oklch(99.5% 0.004 80);
+  --surface-alt: oklch(96.5% 0.006 80);
+  --border: oklch(89% 0.008 80);
+  --border-strong: oklch(80% 0.010 80);
+  --divider: oklch(93% 0.006 80);
+
+  --ink: oklch(20% 0.010 80);
+  --ink-muted: oklch(45% 0.010 80);
+  --ink-subtle: oklch(60% 0.010 80);
+  --ink-on-accent: oklch(98% 0.005 150);
+
+  --accent: oklch(48% 0.085 150);
+  --accent-hover: oklch(43% 0.085 150);
+  --accent-soft: oklch(94% 0.030 150);
+  --accent-ink: oklch(35% 0.085 150);
+
+  --gain: oklch(50% 0.110 145);
+  --gain-soft: oklch(94% 0.040 145);
+  --loss: oklch(54% 0.150 28);
+  --loss-soft: oklch(94% 0.045 28);
+  --warn: oklch(64% 0.130 75);
+  --warn-soft: oklch(95% 0.050 75);
+  --info: oklch(54% 0.090 240);
+  --info-soft: oklch(94% 0.030 240);
+  --pending: oklch(55% 0.020 80);
+  --pending-soft: oklch(93% 0.010 80);
+
+  --s1: oklch(48% 0.085 150);
+  --s2: oklch(54% 0.090 240);
+  --s3: oklch(60% 0.110 75);
+  --s4: oklch(54% 0.110 28);
+  --s5: oklch(50% 0.080 300);
+
+  --elev-1: 0 1px 2px rgba(40, 30, 15, 0.04), 0 1px 0 rgba(40, 30, 15, 0.02);
+  --elev-2: 0 2px 6px rgba(40, 30, 15, 0.06), 0 1px 2px rgba(40, 30, 15, 0.04);
+  --elev-3: 0 8px 24px rgba(40, 30, 15, 0.08), 0 2px 6px rgba(40, 30, 15, 0.05);
+  --elev-4: 0 20px 48px rgba(40, 30, 15, 0.14), 0 4px 12px rgba(40, 30, 15, 0.06);
+}
+
+.dark {
+  --bg: oklch(16% 0.008 80);
+  --surface: oklch(20% 0.010 80);
+  --surface-alt: oklch(23% 0.010 80);
+  --border: oklch(28% 0.010 80);
+  --border-strong: oklch(36% 0.012 80);
+  --divider: oklch(25% 0.010 80);
+
+  --ink: oklch(95% 0.008 80);
+  --ink-muted: oklch(70% 0.010 80);
+  --ink-subtle: oklch(55% 0.010 80);
+  --ink-on-accent: oklch(98% 0.005 150);
+
+  --accent: oklch(62% 0.110 150);
+  --accent-hover: oklch(68% 0.110 150);
+  --accent-soft: oklch(28% 0.040 150);
+  --accent-ink: oklch(85% 0.080 150);
+
+  --gain: oklch(70% 0.150 145);
+  --gain-soft: oklch(28% 0.060 145);
+  --loss: oklch(68% 0.170 28);
+  --loss-soft: oklch(28% 0.060 28);
+  --warn: oklch(74% 0.140 75);
+  --warn-soft: oklch(28% 0.060 75);
+  --info: oklch(70% 0.110 240);
+  --info-soft: oklch(26% 0.040 240);
+  --pending: oklch(65% 0.015 80);
+  --pending-soft: oklch(26% 0.010 80);
+
+  --s1: oklch(62% 0.110 150);
+  --s2: oklch(70% 0.110 240);
+  --s3: oklch(74% 0.140 75);
+  --s4: oklch(68% 0.140 28);
+  --s5: oklch(64% 0.110 300);
+
+  --elev-1: 0 1px 0 rgba(0, 0, 0, 0.4), 0 1px 2px rgba(0, 0, 0, 0.3);
+  --elev-2: 0 2px 6px rgba(0, 0, 0, 0.4), 0 1px 2px rgba(0, 0, 0, 0.3);
+  --elev-3: 0 8px 24px rgba(0, 0, 0, 0.5), 0 2px 6px rgba(0, 0, 0, 0.35);
+  --elev-4: 0 20px 48px rgba(0, 0, 0, 0.6), 0 4px 12px rgba(0, 0, 0, 0.4);
+}
+
+html,
+body,
+#root {
+  height: 100%;
+}
+body {
+  margin: 0;
+  background: var(--bg);
+  color: var(--ink);
+  font-family: 'Inter', ui-sans-serif, system-ui, -apple-system, sans-serif;
+  -webkit-font-smoothing: antialiased;
+  -moz-osx-font-smoothing: grayscale;
+}
+
+* {
+  box-sizing: border-box;
+}
+
+.tabular {
+  font-variant-numeric: tabular-nums;
+}
