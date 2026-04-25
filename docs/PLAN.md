@@ -291,19 +291,20 @@ finance-dashboard/
 
 ## Phased delivery
 
-### Phase 0 — UI design in Figma (before any code)
-**Goal**: nail the visual + interaction design before writing components.
-- Use the **Figma MCP** integration with Claude to generate initial layouts:
+### Phase 0 — UI design in Claude (artifacts, before any code)
+**Goal**: nail the visual + interaction design by iterating live React artifacts in Claude before committing component code to the repo.
+- For each screen, prompt Claude on claude.ai (or Claude Desktop) to generate a self-contained **React + Tailwind artifact**:
   - Dashboard (4–6 summary cards, projection chart, quick actions)
   - Income, Outflows, Savings list views
   - Savings detail (per-instrument projection chart)
   - Documents page (monthly grid + drag-drop)
   - Monthly Review (Claude chat panel)
-- Produce a small **design system** in Figma (color tokens, type scale, card/button primitives) so every page is coherent and the shadcn/Tailwind translation is mechanical.
-- For each screen, capture a Figma node URL — Claude Code can later use `get_design_context` to pull React+Tailwind code stubs directly from each frame.
-- Optionally publish a Figma library and use **Code Connect** mappings so generated code references shadcn components by name (e.g. `<Card>`, `<Button>`) instead of producing one-off styled divs.
+- Iterate inside the artifact preview — adjust spacing, color, hierarchy, mobile breakpoints — until each screen looks right. Refer to the screen with placeholder/mock data, no real values.
+- Establish a tiny **design system** early (colour tokens, typography scale, spacing scale, card/button primitives matching shadcn defaults) and reuse it across artifacts so the whole dashboard stays coherent.
+- Once a screen is approved, **paste the artifact into Claude Code** (or save it to `docs/design/<screen>.tsx`) so the implementation phase has the exact target component to wire up to real Drive-backed data and parsers.
+- Keep design artifacts checked in under `docs/design/` as `.tsx` files — they are *generic* (no real data) and serve as living UX specs for future contributors.
 
-**Verification**: at least one approved Figma frame per page (Dashboard, Income, Outflows, Savings, Documents, Monthly Review) with annotated layout, colors, type scale.
+**Verification**: one approved artifact per screen, with mock data only, committed under `docs/design/`. Each artifact compiles standalone (no project deps), uses Tailwind classes that map cleanly to shadcn components, and looks correct on both mobile (390px) and desktop (1280px) widths.
 
 ### Phase 1 — Foundation (MVP)
 **Goal**: working SPA, auth, manual data entry, dashboard cards.
