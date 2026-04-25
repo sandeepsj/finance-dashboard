@@ -6,13 +6,16 @@
 // pipeline surfaces; the UI then prompts for a password and retries.
 
 import * as pdfjs from 'pdfjs-dist';
-// Vite resolves this `?url` import to a hashed URL for the worker bundle.
-import workerUrl from 'pdfjs-dist/build/pdf.worker.min.mjs?url';
+// `?worker` makes Vite emit a Worker constructor for this module, sidestepping
+// the URL-resolution and MIME-type problems that plague `?url` deployments
+// (especially on GitHub Pages, which serves `.mjs` with a non-module-friendly
+// content type for module workers).
+import PdfWorker from 'pdfjs-dist/build/pdf.worker.min.mjs?worker';
 
 import type { ExtractedDocument, ExtractedPage, RawFile, ReadOptions, Reader } from '../types';
 import { hashBytes } from '../hash';
 
-pdfjs.GlobalWorkerOptions.workerSrc = workerUrl;
+pdfjs.GlobalWorkerOptions.workerPort = new PdfWorker();
 
 interface PdfPositionedItem { str: string; transform: number[]; width: number }
 
