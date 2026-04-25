@@ -26,11 +26,9 @@ jobs:
           node-version: 22
           cache: npm
 
-      # Pin npm to match the lockfile resolver. Using `npm install` (not `ci`)
-      # because vitest 4.x's transitive deps drift in ways that npm ci flags
-      # as out-of-sync even on a freshly regenerated lockfile.
-      - run: npm install -g npm@11
-
+      # Using `npm install` (not `ci`) because vitest 4.x's transitive deps
+      # drift in ways that npm ci flags as out-of-sync between npm versions
+      # even on a freshly regenerated lockfile.
       - run: npm install --no-audit --no-fund
 
       - run: npm run typecheck
