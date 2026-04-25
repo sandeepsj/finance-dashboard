@@ -17,7 +17,7 @@ dashboard should:
 
 1. Aggregates **income streams** (salary, family pension, annual insurance benefits) and total monthly/yearly income.
 2. Shows **committed outflows** (rent, SIPs, RD, LIC + HDFC Life premiums, EMIs, partner support, subscriptions).
-3. Tracks **savings instruments** of many different types (MF, LIC endowment, HDFC Life Sanchay Par, Postal RD, Bima Bachat single-premium, etc.) — each with: amount, frequency, start date, maturity date, projected returns.
+3. Tracks **savings instruments** of many different types (mutual funds, LIC endowment plans, HDFC Life par/non-par plans, money-back plans, single-premium plans, postal RD, bank FD, EPF, NPS, stocks, etc.) — each with its own schema: amount, frequency, start date, maturity date, projected returns, payout schedule.
 4. Generates **future projections** for cash flow + savings maturity.
 5. Stores raw documents (CC bills, bank statements, insurance docs) **as references** linked to derived data, with monthly upload workflow.
 6. Runs a **Claude-powered monthly review agent** that ingests new statements and gives suggestions.
@@ -339,7 +339,7 @@ finance-dashboard/
 - Savings page: card per instrument, totals by type
 - Detail page: projection chart (value over time until maturity)
 
-**Verification**: upload Groww xlsx → MF list and current portfolio value match the Groww UI; manually enter an HDFC Life Sanchay Par policy → projection chart correctly shows next survival benefit date.
+**Verification**: upload Groww xlsx → MF list and current portfolio value match the Groww UI; manually enter a par-savings life-insurance policy → projection chart correctly shows next scheduled survival/maturity benefit.
 
 ### Phase 4 — Projections & cash flow forecast
 - Cash flow projection: next 12 months, accounting for SIPs ending, EMIs ending, premium dates
