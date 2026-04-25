@@ -20,6 +20,9 @@ export class XlsxReader implements Reader {
     if (typeof file.data === 'string') {
       throw new Error('XlsxReader expected ArrayBuffer; got string');
     }
+    // Hash before handing the buffer to sheetjs (defensive; matches the PDF
+    // reader's pattern even though sheetjs runs on the main thread).
+    const hash = await hashBytes(file.data);
     const buf = new Uint8Array(file.data);
     const wb = XLSX.read(buf, { type: 'array' });
 
@@ -41,7 +44,7 @@ export class XlsxReader implements Reader {
     }
 
     return {
-      sourceFile: { name: file.name, mimeType: file.mimeType, hash: await hashBytes(file.data) },
+      sourceFile: { name: file.name, mimeType: file.mimeType, hash },
       text: allText.join('\n\n'),
       tables,
       metadata: { sheetNames: wb.SheetNames },

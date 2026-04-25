@@ -93,12 +93,14 @@ export async function processFile(
 
   // Best-effort: when signed in, upload the raw file to Drive too. Failure
   // is non-fatal — the parsed records are already in the store.
+  // Use the original File (extends Blob) directly — raw.data may have been
+  // transferred to the pdfjs worker by this point, leaving its ArrayBuffer
+  // detached.
   if (authStore.getSnapshot().kind === 'signed-in') {
     try {
-      const ext = (raw.name.match(/\.[^.]+$/)?.[0] ?? '').toLowerCase();
+      const ext = (file.name.match(/\.[^.]+$/)?.[0] ?? '').toLowerCase();
       const driveName = `${fileHash}${ext}`;
-      const blob = typeof raw.data === 'string' ? new Blob([raw.data], { type: raw.mimeType }) : new Blob([raw.data], { type: raw.mimeType });
-      await uploadDocument(driveName, blob, raw.mimeType);
+      await uploadDocument(driveName, file, file.type || raw.mimeType);
     } catch (e) {
       console.warn('[upload] raw file Drive upload failed', e);
     }

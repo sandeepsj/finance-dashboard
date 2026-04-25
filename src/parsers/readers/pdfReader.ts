@@ -73,6 +73,11 @@ export class PdfReader implements Reader {
       throw new Error('PdfReader expected ArrayBuffer; got string');
     }
 
+    // Hash before pdfjs takes ownership: when the worker is active, pdfjs
+    // transfers the underlying ArrayBuffer via postMessage, leaving file.data
+    // detached. Subsequent constructs against it throw
+    // "Cannot perform Construct on a detached ArrayBuffer".
+    const hash = await hashBytes(file.data);
     const data = new Uint8Array(file.data);
     let pdf: pdfjs.PDFDocumentProxy;
     try {
@@ -99,7 +104,7 @@ export class PdfReader implements Reader {
     }
 
     return {
-      sourceFile: { name: file.name, mimeType: file.mimeType, hash: await hashBytes(file.data) },
+      sourceFile: { name: file.name, mimeType: file.mimeType, hash },
       text: pages.map(p => p.text).join('\n'),
       pages,
       metadata: { pageCount: pdf.numPages },
