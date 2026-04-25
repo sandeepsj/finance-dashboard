@@ -62,9 +62,9 @@ describe('cashflow', () => {
 describe('derivedIncomeStreams', () => {
   it('groups credits by normalized description and computes monthly equivalent', () => {
     const s = stateWithTxns(
-      txn({ id: '1', date: '2026-01-01', amount: 100000, direction: 'C', description: 'JUSPAY TECHNOLOGIES PVT LTD' }),
-      txn({ id: '2', date: '2026-02-01', amount: 100000, direction: 'C', description: 'JUSPAY TECHNOLOGIES PVT LTD' }),
-      txn({ id: '3', date: '2026-03-01', amount: 100000, direction: 'C', description: 'JUSPAY TECHNOLOGIES PVT LTD' }),
+      txn({ id: '1', date: '2026-01-01', amount: 100000, direction: 'C', description: 'ACME CORP PAYROLL' }),
+      txn({ id: '2', date: '2026-02-01', amount: 100000, direction: 'C', description: 'ACME CORP PAYROLL' }),
+      txn({ id: '3', date: '2026-03-01', amount: 100000, direction: 'C', description: 'ACME CORP PAYROLL' }),
     );
     const streams = derivedIncomeStreams(s);
     expect(streams).toHaveLength(1);

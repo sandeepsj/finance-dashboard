@@ -322,7 +322,7 @@ export interface DerivedIncomeStream {
 }
 
 const TYPE_PATTERNS: { type: IncomeStreamType; pattern: RegExp }[] = [
-  { type: 'salary', pattern: /\b(juspay|salary|sal\s*cr|payroll|wages)\b/i },
+  { type: 'salary', pattern: /\b(salary|sal\s*cr|payroll|wages)\b/i },
   { type: 'pension', pattern: /\bpension\b/i },
   { type: 'rental', pattern: /\b(rent|tenant)\b/i },
   { type: 'insurance-payout', pattern: /\b(survival\s*benefit|maturity\s*proceeds|insurance\s*claim)\b/i },
@@ -335,7 +335,7 @@ function classifyIncome(description: string): IncomeStreamType {
 }
 
 /** Strip the noisy parts of a UPI / NEFT description so similar credits group
- *  together (e.g. "UPI-JUSPAY-XYZ123" and "UPI-JUSPAY-ABC456" both → "UPI JUSPAY"). */
+ *  together (e.g. "UPI-EMPLOYER-XYZ123" and "UPI-EMPLOYER-ABC456" both → "UPI EMPLOYER"). */
 function normalizeForGrouping(s: string): string {
   return s
     .toUpperCase()

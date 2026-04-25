@@ -104,7 +104,7 @@ export const merchantRules: CategorizationRule[] = [
   regexRule({ id: 'cat.cash.cash', pattern: /\bCASH\s*WITHDRAWAL\b|\bCASH\s*WDL\b/i, category: 'cash' }),
 
   // Income (not outflow but useful to tag)
-  regexRule({ id: 'cat.salary', pattern: /\b(JUSPAY|salary|sal\s*cr|payroll)\b/i, category: 'salary' }),
+  regexRule({ id: 'cat.salary', pattern: /\b(salary|sal\s*cr|payroll)\b/i, category: 'salary' }),
   regexRule({ id: 'cat.refund', pattern: /\b(REFUND|REVERSAL|CASHBACK)\b/i, category: 'refund' }),
 
   // Person-to-person transfers (UPI / NEFT to individuals) — broad fallback

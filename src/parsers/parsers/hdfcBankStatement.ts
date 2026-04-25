@@ -50,7 +50,7 @@ function detectFirstRowDirection(narration: string): 'D' | 'C' | null {
   const n = narration.toUpperCase();
   if (/\bACH\s*D-?\b/.test(n)) return 'D';
   if (/\bACH\s*C-?\b/.test(n)) return 'C';
-  if (/\b(SALARY|JUSPAY|REFUND|REVERSAL|INT\.?\s*PD|CASHBACK|DIVIDEND)\b/.test(n)) return 'C';
+  if (/\b(SALARY|REFUND|REVERSAL|INT\.?\s*PD|CASHBACK|DIVIDEND)\b/.test(n)) return 'C';
   if (/\bUPI[- ]/.test(n)) return 'D';
   if (/\bATM[- ]/.test(n)) return 'D';
   return null;

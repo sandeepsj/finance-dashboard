@@ -22,9 +22,9 @@ describe('categorize', () => {
     expect(t.category).toBe('sip');
   });
 
-  it('detects salary from JUSPAY-style narration', () => {
-    const t = categorize(txn('JUSPAY TECHNOLOGIES PVT LTD', { direction: 'C' }));
-    expect(t.category).toBe('salary');
+  it('detects salary from common payroll keywords', () => {
+    expect(categorize(txn('ACME PAYROLL CR APR 2026', { direction: 'C' })).category).toBe('salary');
+    expect(categorize(txn('SAL CR FOR 04/2026', { direction: 'C' })).category).toBe('salary');
   });
 
   it('detects subscription for Anthropic / Google Cloud / Netflix', () => {
