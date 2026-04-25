@@ -6,6 +6,7 @@ import { authStore } from '@/auth/google';
 import { uploadDocument } from '@/auth/drive';
 import {
   createDefaultPipeline,
+  type ParseError,
   type Parser,
   type ParseResult,
   type PipelineEvent,
@@ -81,6 +82,7 @@ export async function processFile(
       store.markDocumentFailed(fileHash, 'no parser matched');
       return { kind: 'no-parser-matched' };
     }
+    console.error('[upload] pipeline failed:', result.error);
     const reason = describeError(result.error);
     store.markDocumentFailed(fileHash, reason);
     return { kind: 'failed', reason };
@@ -105,15 +107,20 @@ export async function processFile(
   return { kind: 'parsed', result: result.value, parser };
 }
 
-function describeError(error: { code: string }): string {
+function describeError(error: ParseError): string {
   switch (error.code) {
     case 'reader-failed':
-      return 'Could not read the file (corrupt or unsupported format).';
+      return `Could not read the file: ${error.cause}`;
     case 'parser-failed':
-      return 'Parser threw an error mid-extraction.';
+      return `Parser ${error.parserId} threw: ${error.cause}`;
     case 'no-reader-for-mime':
-      return 'No reader available for this file type.';
+      return `No reader registered for MIME type "${error.mimeType}".`;
+    case 'no-parser-matched':
+      return 'No parser recognized this file.';
+    case 'password-required':
+      return 'PDF is password-protected.';
     default:
-      return error.code;
+      // Should be unreachable; lets TypeScript catch missing branches.
+      return JSON.stringify(error);
   }
 }

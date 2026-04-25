@@ -16,7 +16,9 @@ export default defineConfig({
           if (id.includes('node_modules')) {
             if (id.includes('react-router')) return 'vendor-router';
             if (id.includes('/react/') || id.includes('/react-dom/')) return 'vendor-react';
-            if (id.includes('pdfjs-dist')) return 'vendor-pdfjs';
+            // Worker module is emitted as its own chunk via `?worker`; never
+            // fold it into vendor-pdfjs even if the matcher otherwise would.
+            if (id.includes('pdfjs-dist') && !id.includes('worker')) return 'vendor-pdfjs';
             if (id.includes('xlsx')) return 'vendor-xlsx';
             if (id.includes('papaparse')) return 'vendor-papaparse';
           }
