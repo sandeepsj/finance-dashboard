@@ -21,11 +21,15 @@ export function useStoreSelector<T>(selector: (state: AppState) => T): T {
 }
 
 /** Trigger a one-time hydrate from persistence on app mount. Safe to mount in
- *  multiple places — only the first call does work. */
+ *  multiple places — only the first call does work. Also installs a
+ *  beforeunload handler to flush pending persistence on tab close. */
 export function useHydrate(): void {
   useEffect(() => {
     if (!store.isHydrated()) {
       void store.hydrate();
     }
+    const onBeforeUnload = () => store.flush();
+    window.addEventListener('beforeunload', onBeforeUnload);
+    return () => window.removeEventListener('beforeunload', onBeforeUnload);
   }, []);
 }

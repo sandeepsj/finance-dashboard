@@ -3,11 +3,11 @@ import { TopBar } from '@/components/TopBar';
 import { Card } from '@/components/ui/Card';
 import { Badge, type BadgeTone } from '@/components/ui/Badge';
 import { Button } from '@/components/ui/Button';
-import { Doc, Lock, Upload as UploadIcon } from '@/components/ui/Icon';
+import { Doc, Drive, Lock, Upload as UploadIcon } from '@/components/ui/Icon';
 import { store } from '@/store/store';
 import { useStoreSelector } from '@/store/hooks';
 import { formatDate } from '@/lib/format';
-import type { ParseStatus } from '@/domain/types';
+import type { DriveSyncStatus, ParseStatus } from '@/domain/types';
 
 const statusTone: Record<ParseStatus, BadgeTone> = {
   parsed: 'gain',
@@ -18,6 +18,19 @@ const statusLabel: Record<ParseStatus, string> = {
   parsed: 'Parsed',
   failed: 'Failed',
   pending: 'Pending',
+};
+
+const driveTone: Record<DriveSyncStatus, BadgeTone> = {
+  'local-only': 'neutral',
+  pending: 'info',
+  synced: 'gain',
+  failed: 'loss',
+};
+const driveLabel: Record<DriveSyncStatus, string> = {
+  'local-only': 'Local',
+  pending: 'Syncing',
+  synced: 'Drive',
+  failed: 'Drive ✗',
 };
 
 function fmtBytes(n: number): string {
@@ -71,6 +84,19 @@ export function Documents() {
                       <span className="text-[11px] text-ink-muted font-mono">{recordCount} records</span>
                     )}
                   </div>
+                  {d.driveSyncStatus && (
+                    <div className="flex items-center justify-between text-[10px] text-ink-muted">
+                      <Badge tone={driveTone[d.driveSyncStatus]}>
+                        <Drive size={10} />
+                        <span className="ml-1">{driveLabel[d.driveSyncStatus]}</span>
+                      </Badge>
+                      {d.driveFileId && (
+                        <span className="font-mono text-ink-subtle truncate max-w-[100px]" title={d.driveFileId}>
+                          {d.driveFileId.slice(0, 8)}…
+                        </span>
+                      )}
+                    </div>
+                  )}
                   <div className="flex items-center justify-between text-[11px] text-ink-subtle">
                     <span>{formatDate(d.uploadedAt, { short: true })}</span>
                     <button

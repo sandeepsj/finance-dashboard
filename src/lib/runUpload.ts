@@ -91,19 +91,23 @@ export async function processFile(
   const parser = pipeline.parsers.byId(result.value.source.parserId)!;
   store.ingestParseResult(result.value);
 
-  // Best-effort: when signed in, upload the raw file to Drive too. Failure
-  // is non-fatal — the parsed records are already in the store.
-  // Use the original File (extends Blob) directly — raw.data may have been
-  // transferred to the pdfjs worker by this point, leaving its ArrayBuffer
-  // detached.
+  // When signed in, also push the raw file to Drive. Track the status on
+  // the Document so the UI can show a Drive-synced badge. Use the original
+  // File (extends Blob) directly — raw.data may have been transferred to
+  // the pdfjs worker by this point, leaving its ArrayBuffer detached.
   if (authStore.getSnapshot().kind === 'signed-in') {
+    store.setDocumentDriveStatus(fileHash, 'pending');
     try {
       const ext = (file.name.match(/\.[^.]+$/)?.[0] ?? '').toLowerCase();
       const driveName = `${fileHash}${ext}`;
-      await uploadDocument(driveName, file, file.type || raw.mimeType);
+      const { id: driveFileId } = await uploadDocument(driveName, file, file.type || raw.mimeType);
+      store.setDocumentDriveStatus(fileHash, 'synced', driveFileId);
     } catch (e) {
       console.warn('[upload] raw file Drive upload failed', e);
+      store.setDocumentDriveStatus(fileHash, 'failed');
     }
+  } else {
+    store.setDocumentDriveStatus(fileHash, 'local-only');
   }
 
   return { kind: 'parsed', result: result.value, parser };

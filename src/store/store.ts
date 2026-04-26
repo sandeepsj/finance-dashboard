@@ -155,6 +155,35 @@ export class Store {
     });
   }
 
+  setDocumentDriveStatus(fileHash: string, status: NonNullable<Document['driveSyncStatus']>, driveFileId?: string): void {
+    this.mutate(prev => {
+      const existing = prev.documents[fileHash];
+      if (!existing) return prev;
+      return {
+        ...prev,
+        documents: {
+          ...prev.documents,
+          [fileHash]: {
+            ...existing,
+            driveSyncStatus: status,
+            driveFileId: driveFileId ?? existing.driveFileId,
+          },
+        },
+      };
+    });
+  }
+
+  /** Synchronously write the current state to localStorage. Used by the
+   *  beforeunload handler so a tab close can't drop the last debounced save. */
+  flush(): void {
+    if (this.persistTimer) {
+      clearTimeout(this.persistTimer);
+      this.persistTimer = null;
+    }
+    // Best-effort fire-and-forget; localStorage is sync, Drive is async-but-safe-to-skip.
+    void this.persistence.save(this.state).catch(err => console.error('[store] flush save failed', err));
+  }
+
   /** Remove a document and all records it produced. */
   removeDocument(fileHash: string): void {
     this.mutate(prev => {

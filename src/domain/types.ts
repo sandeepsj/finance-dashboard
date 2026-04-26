@@ -196,9 +196,11 @@ export interface Account {
 // ── Documents (raw uploads) ───────────────────────────────────────────────
 
 export type ParseStatus = 'pending' | 'parsed' | 'failed';
+export type DriveSyncStatus = 'local-only' | 'pending' | 'synced' | 'failed';
 
 export interface Document {
   id: string;
+  /** Set once the raw file has been uploaded to Drive. */
   driveFileId?: string;
   name: string;
   mimeType: string;
@@ -208,6 +210,9 @@ export interface Document {
   period?: string;
   uploadedAt: string;
   parseStatus: ParseStatus;
+  /** Where the raw bytes live: localStorage only, in flight to Drive,
+   *  successfully synced to Drive, or upload failed. */
+  driveSyncStatus?: DriveSyncStatus;
   derivedRecordIds?: string[];
   passwordRequired?: boolean;
 }

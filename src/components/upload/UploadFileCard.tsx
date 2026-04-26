@@ -2,9 +2,11 @@ import { useState } from 'react';
 import { Card } from '@/components/ui/Card';
 import { Badge } from '@/components/ui/Badge';
 import { Button } from '@/components/ui/Button';
-import { Doc, Lock } from '@/components/ui/Icon';
+import { Doc, Drive, Lock } from '@/components/ui/Icon';
 import { processFile, type UploadStage } from '@/lib/runUpload';
 import { formatINR } from '@/lib/format';
+import { useStoreSelector } from '@/store/hooks';
+import type { DriveSyncStatus } from '@/domain/types';
 
 interface UploadFileCardProps {
   file: File;
@@ -133,6 +135,30 @@ function Status({ stage }: { stage: UploadStage }) {
   }
 }
 
+const driveTone: Record<DriveSyncStatus, 'neutral' | 'info' | 'gain' | 'loss'> = {
+  'local-only': 'neutral',
+  pending: 'info',
+  synced: 'gain',
+  failed: 'loss',
+};
+const driveLabel: Record<DriveSyncStatus, string> = {
+  'local-only': 'Saved locally',
+  pending: 'Syncing to Drive…',
+  synced: 'Saved to Drive',
+  failed: 'Drive sync failed',
+};
+
+function DriveStatusBadge({ fileHash }: { fileHash: string }) {
+  const status = useStoreSelector(s => s.documents[fileHash]?.driveSyncStatus);
+  if (!status) return null;
+  return (
+    <Badge tone={driveTone[status]}>
+      <Drive size={11} />
+      <span className="ml-1">{driveLabel[status]}</span>
+    </Badge>
+  );
+}
+
 function ParsedSummary({ stage }: { stage: Extract<UploadStage, { kind: 'parsed' }> }) {
   const r = stage.result;
   const totalDebits = r.transactions.filter(t => t.direction === 'D').reduce((a, t) => a + t.amount, 0);
@@ -142,7 +168,10 @@ function ParsedSummary({ stage }: { stage: Extract<UploadStage, { kind: 'parsed'
 
   return (
     <div className="border-t border-divider pt-3 flex flex-col gap-2">
-      <div className="text-[11px] font-semibold text-ink-muted uppercase tracking-[0.04em]">What we found</div>
+      <div className="flex items-center justify-between">
+        <div className="text-[11px] font-semibold text-ink-muted uppercase tracking-[0.04em]">What we found</div>
+        <DriveStatusBadge fileHash={r.source.fileHash} />
+      </div>
 
       <div className="grid grid-cols-2 gap-2">
         {r.transactions.length > 0 && (
