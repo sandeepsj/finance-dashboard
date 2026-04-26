@@ -84,12 +84,53 @@ export interface LICEndowmentPolicy extends BaseSavings {
   nominee: string;
 }
 
+export interface PolicyPayment {
+  /** ISO date the premium is due. */
+  dueDate: string;
+  amount: number;
+  /** Set when the user marks it paid (or it's auto-detected from a bank txn). */
+  paidDate?: string;
+  paidTransactionId?: string;
+  /** Document.id of an attached payment receipt. */
+  receiptDocId?: string;
+}
+
+export interface PolicyPayout {
+  /** ISO date the payout is due. */
+  dueDate: string;
+  /** Estimated amount (projection) or actual amount (after receipt). */
+  amount: number;
+  payoutType: 'survival' | 'maturity' | 'death';
+  /** Set when received. */
+  receivedDate?: string;
+  receivedTransactionId?: string;
+}
+
 export interface HDFCLifePolicy extends BaseSavings {
   type: 'hdfcLife';
   productName: string;
   policyNumber: string;
-  sumAssured: number;
-  payoutSchedule?: { date: string; amount: number; payoutType: 'survival' | 'maturity' }[];
+  /** Sum assured payable on death. */
+  sumAssuredOnDeath: number;
+  /** Sum assured payable on maturity (= annualizedPremium × PPT for Sanchay Par Advantage). */
+  sumAssuredOnMaturity: number;
+  /** Premium paying term (years). */
+  premiumPayingTerm: number;
+  /** Total policy term (years). */
+  policyTerm: number;
+  /** ISO date — first day of cover. */
+  riskCommencementDate: string;
+  /** ISO date — final maturity payout. */
+  maturityDate: string;
+  /** "MM-DD" — every premium due on this calendar day each year. */
+  premiumDueDay?: string;
+  /** "MM-DD" — annual payout day if survival benefit is paid yearly. */
+  payoutDueDay?: string;
+  /** Generated up-front so the UI / outflow projection can use them without
+   *  re-deriving. paidDate / receivedDate / receiptDocId fill in over time. */
+  premiumSchedule?: PolicyPayment[];
+  payoutSchedule?: PolicyPayout[];
+  planOption?: string;
 }
 
 export interface PostalRD extends BaseSavings {

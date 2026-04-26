@@ -65,7 +65,8 @@ export type ProducedRecordKind =
   | 'transactions'
   | 'obligations'
   | 'incomeStreams'
-  | 'savingsInstruments';
+  | 'savingsInstruments'
+  | 'paymentEvents';
 
 export interface ParseWarning {
   code: string;
@@ -74,6 +75,37 @@ export interface ParseWarning {
   pageNumber?: number;
   raw?: unknown;
 }
+
+/**
+ * A receipt / confirmation record that mutates an existing record in the
+ * store rather than creating a new one. Receipt parsers emit PaymentEvents;
+ * the store finds the matching SavingsInstrument (or other target) and marks
+ * the corresponding payment as paid + attaches the receipt document.
+ *
+ * Designed for extension: every insurance / RD / FD receipt parser uses the
+ * same shape — the discriminated `matchTo` controls how the store finds the
+ * target record.
+ */
+export interface PaymentEvent {
+  /** Stable id derived from receiptDocId + paidDate. */
+  id: string;
+  matchTo: PaymentMatchKey;
+  amount: number;
+  /** ISO date the payment was made (per the receipt). */
+  paidDate: string;
+  /** Receipt number, transaction ref, etc. */
+  reference?: string;
+  /** Document.id of the receipt PDF. Filled by the base parser from the
+   *  source file hash so subclasses don't have to thread it through. */
+  receiptDocId?: string;
+}
+
+export type PaymentMatchKey =
+  /** Match a SavingsInstrument by its `policyNumber` field
+   *  (HDFCLifePolicy, LICEndowmentPolicy, etc). */
+  | { kind: 'policy'; institution: string; policyNumber: string }
+  /** Match by exact instrument id (when the receipt names it directly). */
+  | { kind: 'instrument'; instrumentId: string };
 
 export interface ParseResult {
   source: {
@@ -87,6 +119,8 @@ export interface ParseResult {
   obligations: Obligation[];
   incomeStreams: IncomeStream[];
   savingsInstruments: SavingsInstrument[];
+  /** Mutate existing records (e.g. mark a premium as paid). */
+  paymentEvents: PaymentEvent[];
   warnings: ParseWarning[];
 }
 

@@ -173,6 +173,22 @@ function ParsedSummary({ stage }: { stage: Extract<UploadStage, { kind: 'parsed'
         <DriveStatusBadge fileHash={r.source.fileHash} />
       </div>
 
+      {r.paymentEvents.length > 0 && (
+        <div className="bg-accent-soft text-accent-ink rounded-sm p-2 flex flex-col gap-1 text-[12px]">
+          {r.paymentEvents.map((e, i) => (
+            <div key={i} className="flex items-center justify-between font-mono">
+              <span>
+                ✓ Payment <span className="font-semibold">{e.matchTo.kind === 'policy' ? `policy ${e.matchTo.policyNumber}` : e.matchTo.instrumentId}</span>
+              </span>
+              <span>
+                {formatINR(e.amount)} · {e.paidDate}
+              </span>
+            </div>
+          ))}
+          <div className="text-[11px] opacity-80">Marked as paid in the matching schedule.</div>
+        </div>
+      )}
+
       <div className="grid grid-cols-2 gap-2">
         {r.transactions.length > 0 && (
           <Stat label="Transactions" value={String(r.transactions.length)} />

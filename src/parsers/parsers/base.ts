@@ -18,6 +18,7 @@ import type {
   ParseResult,
   ParseWarning,
   Parser,
+  PaymentEvent,
   ProducedRecordKind,
 } from '../types';
 import type {
@@ -47,6 +48,13 @@ export abstract class StatementParser implements Parser {
     const obligations = this.extractObligations(extracted, ctx);
     const incomeStreams = this.extractIncomeStreams(extracted, ctx);
     const savingsInstruments = this.extractSavingsInstruments(extracted, ctx);
+    // Receipt parsers fill in receiptDocId from the source file. The store
+    // resolves it against the Document records registered at upload time.
+    const sourceDocId = `doc_${extracted.sourceFile.hash.slice(0, 12)}`;
+    const paymentEvents = this.extractPaymentEvents(extracted, ctx).map(e => ({
+      ...e,
+      receiptDocId: e.receiptDocId ?? sourceDocId,
+    }));
 
     const enriched = this.enrich(transactions, ctx);
 
@@ -62,6 +70,7 @@ export abstract class StatementParser implements Parser {
       obligations,
       incomeStreams,
       savingsInstruments,
+      paymentEvents,
       warnings: ctx.warnings,
     };
   }
@@ -75,6 +84,11 @@ export abstract class StatementParser implements Parser {
     return [];
   }
   protected extractSavingsInstruments(_doc: ExtractedDocument, _ctx: ParseContext): SavingsInstrument[] {
+    return [];
+  }
+  /** Receipt parsers override this to confirm payments against existing
+   *  records (e.g. mark a policy premium as paid). */
+  protected extractPaymentEvents(_doc: ExtractedDocument, _ctx: ParseContext): PaymentEvent[] {
     return [];
   }
   protected enrich(transactions: Transaction[], _ctx: ParseContext): Transaction[] {

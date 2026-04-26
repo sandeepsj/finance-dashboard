@@ -275,6 +275,51 @@ export function dailyDebitTotals(state: AppState, ym: string): DailyTotal[] {
   return buckets;
 }
 
+// ── Savings-instrument projection (premiums + payouts) ──────────────────
+
+export interface UpcomingEvent {
+  date: string;
+  amount: number;
+  kind: 'premium' | 'survival' | 'maturity';
+  instrumentId: string;
+  instrumentLabel: string;
+  instrumentType: string;
+}
+
+/** Pulls premium and payout schedules off SavingsInstruments and returns them
+ *  ordered by date, restricted to (today, today+horizonDays]. */
+export function upcomingFromSavings(state: AppState, horizonDays = 365): UpcomingEvent[] {
+  const today = new Date().toISOString().slice(0, 10);
+  const cutoff = (() => {
+    const d = new Date();
+    d.setDate(d.getDate() + horizonDays);
+    return d.toISOString().slice(0, 10);
+  })();
+
+  const events: UpcomingEvent[] = [];
+  for (const s of Object.values(state.savingsInstruments)) {
+    if (s.type === 'hdfcLife') {
+      for (const p of s.premiumSchedule ?? []) {
+        if (p.dueDate > today && p.dueDate <= cutoff) {
+          events.push({
+            date: p.dueDate, amount: p.amount, kind: 'premium',
+            instrumentId: s.id, instrumentLabel: s.label, instrumentType: s.type,
+          });
+        }
+      }
+      for (const p of s.payoutSchedule ?? []) {
+        if (p.dueDate > today && p.dueDate <= cutoff) {
+          events.push({
+            date: p.dueDate, amount: p.amount, kind: p.payoutType === 'maturity' ? 'maturity' : 'survival',
+            instrumentId: s.id, instrumentLabel: s.label, instrumentType: s.type,
+          });
+        }
+      }
+    }
+  }
+  return events.sort((a, b) => (a.date < b.date ? -1 : 1));
+}
+
 export function topMerchants(state: AppState, ym: string, limit = 8): MerchantSpend[] {
   const debits = debitsForMonth(state, ym);
   const map = new Map<string, MerchantSpend>();

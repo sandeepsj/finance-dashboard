@@ -18,6 +18,8 @@ export type {
   ParseResult,
   ParseWarning,
   ParseError,
+  PaymentEvent,
+  PaymentMatchKey,
   ProducedRecordKind,
 } from './types';
 
@@ -32,6 +34,8 @@ export { HdfcBankStatementParser } from './parsers/hdfcBankStatement';
 export { HdfcCreditCardParser } from './parsers/hdfcCreditCard';
 export { IciciCreditCardParser } from './parsers/iciciCreditCard';
 export { GrowwMutualFundsParser } from './parsers/growwMutualFunds';
+export { HdfcLifeSanchayParser } from './parsers/hdfcLifeSanchay';
+export { HdfcLifePremiumReceiptParser } from './parsers/hdfcLifePremiumReceipt';
 
 export { CategorizerChain, regexRule, type CategorizationRule } from './categorizers';
 export { starterRules } from './categorizers/starterRules';
@@ -46,6 +50,8 @@ import { HdfcBankStatementParser } from './parsers/hdfcBankStatement';
 import { HdfcCreditCardParser } from './parsers/hdfcCreditCard';
 import { IciciCreditCardParser } from './parsers/iciciCreditCard';
 import { GrowwMutualFundsParser } from './parsers/growwMutualFunds';
+import { HdfcLifeSanchayParser } from './parsers/hdfcLifeSanchay';
+import { HdfcLifePremiumReceiptParser } from './parsers/hdfcLifePremiumReceipt';
 import { ParserRegistry } from './parsers/registry';
 import { CsvReader, PdfReader, ReaderRegistry, TextReader, XlsxReader } from './readers';
 
@@ -66,6 +72,9 @@ export function createDefaultPipeline(): DefaultPipeline {
     .register(new TextReader());
 
   const parsers = new ParserRegistry()
+    // Receipt parsers first — they're more specific than the policy schedule.
+    .register(new HdfcLifePremiumReceiptParser())
+    .register(new HdfcLifeSanchayParser())
     .register(new HdfcBankStatementParser())
     .register(new HdfcCreditCardParser())
     .register(new IciciCreditCardParser())

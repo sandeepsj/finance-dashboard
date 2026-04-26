@@ -25,6 +25,8 @@ import { HdfcBankStatementParser } from '../src/parsers/parsers/hdfcBankStatemen
 import { HdfcCreditCardParser } from '../src/parsers/parsers/hdfcCreditCard';
 import { IciciCreditCardParser } from '../src/parsers/parsers/iciciCreditCard';
 import { GrowwMutualFundsParser } from '../src/parsers/parsers/growwMutualFunds';
+import { HdfcLifeSanchayParser } from '../src/parsers/parsers/hdfcLifeSanchay';
+import { HdfcLifePremiumReceiptParser } from '../src/parsers/parsers/hdfcLifePremiumReceipt';
 import { CategorizerChain } from '../src/parsers/categorizers/index';
 import { merchantRules } from '../src/parsers/categorizers/merchantRules';
 import { starterRules } from '../src/parsers/categorizers/starterRules';
@@ -32,6 +34,8 @@ import { hashBytes, hashString } from '../src/parsers/hash';
 import type { ExtractedDocument, ExtractedPage, ExtractedTable } from '../src/parsers/types';
 
 const parsers = new ParserRegistry()
+  .register(new HdfcLifePremiumReceiptParser())
+  .register(new HdfcLifeSanchayParser())
   .register(new HdfcBankStatementParser())
   .register(new HdfcCreditCardParser())
   .register(new IciciCreditCardParser())

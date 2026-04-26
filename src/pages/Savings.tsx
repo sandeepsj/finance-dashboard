@@ -175,11 +175,19 @@ function InstrumentRow({ instr: i, accent }: { instr: SavingsInstrument; accent:
     '—';
 
   // Sub-identifier (scheme category for MF, plan name for LIC, etc.)
-  const subline =
+  // For HDFC Life policies, also surface premium-schedule progress.
+  let subline: string =
     'category' in i ? i.category :
     'planNumber' in i ? `Plan ${i.planNumber}` :
     'productName' in i ? i.productName :
     i.institution;
+  if ('premiumSchedule' in i && i.premiumSchedule) {
+    const paid = i.premiumSchedule.filter(p => p.paidDate).length;
+    const total = i.premiumSchedule.length;
+    const next = i.premiumSchedule.find(p => !p.paidDate);
+    subline += ` · ${paid}/${total} premiums paid`;
+    if (next) subline += ` · next ${next.dueDate}`;
+  }
 
   return (
     <div

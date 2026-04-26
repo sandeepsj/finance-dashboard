@@ -2,8 +2,8 @@
 // and helpers for ingesting parser output. React talks to it through
 // useSyncExternalStore (see hooks.ts).
 
-import type { Document, ParseStatus } from '@/domain/types';
-import type { ParseResult } from '@/parsers';
+import type { Document, ParseStatus, SavingsInstrument } from '@/domain/types';
+import type { ParseResult, PaymentEvent } from '@/parsers';
 import { LocalStoragePersistence, type Persistence } from './persistence';
 import { emptyState, type AppState, SCHEMA_VERSION } from './types';
 
@@ -95,12 +95,13 @@ export class Store {
   }
 
   /** Apply a parser ParseResult to the store: upsert records by id, update
-   *  document parse-status, link derivedRecordIds back. Idempotent — calling
-   *  twice with the same result is a no-op. */
+   *  document parse-status, link derivedRecordIds back. Apply paymentEvents
+   *  to existing records (mark policy premiums paid, etc). Idempotent —
+   *  calling twice with the same result is a no-op. */
   ingestParseResult(result: ParseResult): void {
     this.mutate(prev => {
       const txns = { ...prev.transactions };
-      const savings = { ...prev.savingsInstruments };
+      let savings = { ...prev.savingsInstruments };
       const obligations = { ...prev.obligations };
       const incomeStreams = { ...prev.incomeStreams };
 
@@ -120,6 +121,13 @@ export class Store {
       for (const i of result.incomeStreams) {
         incomeStreams[i.id] = i;
         derivedIds.push(i.id);
+      }
+
+      // Apply payment events — find the matching SavingsInstrument and mark
+      // the closest-by-date premium as paid. Receipts arriving before the
+      // policy itself become orphans (warned about below).
+      for (const event of result.paymentEvents ?? []) {
+        savings = applyPaymentEvent(savings, event);
       }
 
       const docs = { ...prev.documents };
@@ -218,6 +226,77 @@ export class Store {
     this.schedulePersist();
     this.emit();
   }
+}
+
+// ── Payment-event application ────────────────────────────────────────────
+//
+// A receipt parser emits a `PaymentEvent` saying "this payment confirms the
+// premium for policy X paid on date Y". We find the matching
+// SavingsInstrument and snap the event onto the closest scheduled payment
+// (by date) within a reasonable tolerance, marking it paid.
+//
+// Same shape works for any future SavingsInstrument with a `premiumSchedule`
+// field (LIC, Postal RD, etc).
+
+const MATCH_TOLERANCE_DAYS = 90;
+
+function applyPaymentEvent(
+  savings: Record<string, SavingsInstrument>,
+  event: PaymentEvent,
+): Record<string, SavingsInstrument> {
+  const target = findMatchingInstrument(savings, event);
+  if (!target) {
+    console.warn('[store] payment event has no matching record', event);
+    return savings;
+  }
+  if (!('premiumSchedule' in target) || !target.premiumSchedule) return savings;
+
+  // Pick the closest scheduled payment by absolute date diff.
+  let bestIdx = -1;
+  let bestDiff = Infinity;
+  for (let i = 0; i < target.premiumSchedule.length; i++) {
+    const diff = Math.abs(daysBetween(target.premiumSchedule[i].dueDate, event.paidDate));
+    if (diff < bestDiff) {
+      bestDiff = diff;
+      bestIdx = i;
+    }
+  }
+  if (bestIdx < 0 || bestDiff > MATCH_TOLERANCE_DAYS) {
+    console.warn('[store] payment event outside tolerance', { event, bestDiff });
+    return savings;
+  }
+
+  const updatedSchedule = target.premiumSchedule.map((p, i) =>
+    i === bestIdx
+      ? { ...p, paidDate: event.paidDate, receiptDocId: event.receiptDocId, paidTransactionId: p.paidTransactionId }
+      : p,
+  );
+  return {
+    ...savings,
+    [target.id]: { ...target, premiumSchedule: updatedSchedule } as SavingsInstrument,
+  };
+}
+
+function findMatchingInstrument(
+  savings: Record<string, SavingsInstrument>,
+  event: PaymentEvent,
+): SavingsInstrument | null {
+  if (event.matchTo.kind === 'instrument') {
+    return savings[event.matchTo.instrumentId] ?? null;
+  }
+  // matchTo.kind === 'policy'
+  const { policyNumber } = event.matchTo;
+  for (const inst of Object.values(savings)) {
+    if ('policyNumber' in inst && inst.policyNumber === policyNumber) return inst;
+  }
+  return null;
+}
+
+function daysBetween(a: string, b: string): number {
+  const da = Date.parse(a);
+  const db = Date.parse(b);
+  if (Number.isNaN(da) || Number.isNaN(db)) return Infinity;
+  return Math.round((da - db) / 86_400_000);
 }
 
 // Singleton — one store per app instance.
